@@ -107,18 +107,16 @@
                 alert(orderText);
             }
         }
-
-        async function initLIFF() {
-            try {
-                await liff.init({ liffId: "YOUR_LIFF_ID_HERE" });
-                if (!liff.isLoggedIn()) {
-                    liff.login();
-                }
-            } catch (error) {
-                console.log("Browser mode");
-            }
+async function initLIFF() {
+    try {
+        await liff.init({ liffId: "2010383448-jKvlPuGx" });
+        if (!liff.isLoggedIn()) {
+            liff.login();
         }
-        
-        initLIFF();
+    } catch (error) {
+        console.log("Browser mode");
+    }
+}
+         initLIFF();
     </script>
 
