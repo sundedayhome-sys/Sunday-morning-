@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Coffee App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body class="bg-amber-50 text-stone-800 font-sans min-h-screen pb-24">
+
+    <!-- Header -->
+    <header class="bg-amber-800 text-white p-5 sticky top-0 shadow-md z-10">
+        <h1 class="text-xl font-bold text-center">☕ Little Coffee Order</h1>
+        <p class="text-xs text-center text-amber-200 mt-1">สั่งล่วงหน้า ไม่ต้องรอนาน</p>
+    </header>
+
+    <!-- Menu List -->
+    <main class="p-4 max-w-md mx-auto space-y-4">
+        
+        <!-- Menu 1: Espresso -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-100 flex justify-between items-center">
+            <div class="space-y-1">
+                <h3 class="font-bold text-lg">Espresso</h3>
+                <p class="text-amber-700 font-semibold">55 Baht</p>
+                <div class="flex gap-2 pt-1 text-xs text-stone-500">
+                    <label><input type="radio" name="espresso-roast" value="dark" checked> คั่วเข้ม</label>
+                    <label><input type="radio" name="espresso-roast" value="medium"> คั่วกลาง</label>
+                </div>
+            </div>
+            <button onclick="addToCart('Espresso', 55)" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+                + เพิ่ม
+            </button>
+        </div>
+
+        <!-- Menu 2: Latte -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-amber-100 flex justify-between items-center">
+            <div class="space-y-1">
+                <h3 class="font-bold text-lg">Latte</h3>
+                <p class="text-amber-700 font-semibold">60 Baht</p>
+                <div class="flex gap-2 pt-1 text-xs text-stone-500">
+                    <label><input type="radio" name="latte-sweet" value="100" checked> หวานปกติ</label>
+                    <label><input type="radio" name="latte-sweet" value="50"> หวาน 50%</label>
+                </div>
+            </div>
+            <button onclick="addToCart('Latte', 60)" class="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
+                + เพิ่ม
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Cart Bar -->
+    <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 shadow-xl max-w-md mx-auto rounded-t-3xl hidden">
+        <div class="flex justify-between items-center mb-3">
+            <div>
+                <p class="text-xs text-stone-500">รายการในตะกร้า</p>
+                <p id="cart-summary" class="font-bold text-stone-800">0 แก้ว</p>
+            </div>
+            <p id="cart-total" class="text-xl font-bold text-amber-800">0 Baht</p>
+        </div>
+        <button onclick="sendOrder()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold transition flex justify-center items-center gap-2">
+            🟢 ส่งออเดอร์เข้า LINE ร้าน
+        </button>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let cart = [];
+
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartBar = document.getElementById('cart-bar');
+            if (cart.length > 0) {
+                cartBar.classList.remove('hidden');
+                document.getElementById('cart-summary').innerText = cart.length + " แก้ว";
+                const total = cart.reduce((sum, item) => sum + item.price, 0);
+                document.getElementById('cart-total').innerText = total + " Baht";
+            } else {
+                cartBar.classList.add('hidden');
+            }
+        }
+
+        function sendOrder() {
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            let orderText = "☕ New Order!\n-------------\n";
+            cart.forEach((item, index) => {
+                orderText += (index + 1) + ". " + item.name + " (" + item.price + " B.)\n";
+            });
+            orderText += "-------------\n💰 Total: " + total + " Baht";
+
+            if (liff.isInClient()) {
+                liff.sendMessages([{
+                    type: 'text',
+                    text: orderText
+                }]).then(() => {
+                    alert('Order sent!');
+                    liff.closeWindow();
+                }).catch((err) => {
+                    console.error('Error:', err);
+                });
+            } else {
+                alert(orderText);
+            }
+        }
+
+        async function initLIFF() {
+            try {
+                await liff.init({ liffId: "YOUR_LIFF_ID_HERE" });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                }
+            } catch (error) {
+                console.log("Browser mode");
+            }
+        }
+        
+        initLIFF();
+    </script>
+
